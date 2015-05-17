@@ -1,6 +1,8 @@
 package substring
 
 import (
+	"math/rand"
+	"strings"
 	"testing"
 	"testing/quick"
 )
@@ -62,3 +64,89 @@ func TestAnyContainsAnyKR(t *testing.T) {
 func TestAnyContainsAnyKRQuick(t *testing.T) {
 	testAgainstNaive(t, AnyContainsAnyKarpRabin)
 }
+
+func makeBenchInputHard() string {
+	tokens := [...]string{
+		"<a>", "<p>", "<b>", "<strong>",
+		"</a>", "</p>", "</b>", "</strong>",
+		"hello", "world",
+	}
+	x := make([]byte, 0, 1<<20)
+	for {
+		i := rand.Intn(len(tokens))
+		if len(x)+len(tokens[i]) >= 1<<20 {
+			break
+		}
+		x = append(x, tokens[i]...)
+	}
+	return string(x)
+}
+
+var benchInputHard = makeBenchInputHard()
+
+func benchmarkMatcherHard(b *testing.B, mm MatcherMaker) {
+	m := mm([]string{"<>", "</pre>", "<b>hello world</b>"})
+	for i := 0; i < b.N; i++ {
+		m.Matches(benchInputHard)
+	}
+}
+
+func benchmarkMatcherHard2(b *testing.B, mm MatcherMaker) {
+	m := mm([]string{
+		"<p>a couple more</p>",
+		"and longer",
+		"<p>some way longer</p>",
+		"<pre>patterns than</pre>",
+		"the other case",
+		"no idea if this makes a real difference",
+		"though, no really",
+		"we'll just have to see",
+		"hello world hello world",
+	})
+	for i := 0; i < b.N; i++ {
+		m.Matches(benchInputHard)
+	}
+}
+
+func benchmarkMatcherHard3(b *testing.B, mm MatcherMaker) {
+	m := mm([]string{
+		"let's", "see", "what", "happens", "with", "lots",
+		"<em>of</em>", "words", "that", "aren't", "just",
+		"one", "letter", "each", "but", "THAT", "aren't",
+		"really", "particularly", "long", "either", "such",
+		"<b>as</b>", "hello world", "none", "that", "match",
+	})
+	for i := 0; i < b.N; i++ {
+		m.Matches(benchInputHard)
+	}
+}
+
+func benchmarkMatcherHard4(b *testing.B, mm MatcherMaker) {
+	m := mm([]string{
+		"xyz", "nothing", "matches", "xylophone", "man",
+		"of", "in", "an", "any", "if", "it", "is", "don't", "really",
+		"know", "what", "I'm", "doing", "here",
+	})
+	for i := 0; i < b.N; i++ {
+		m.Matches(benchInputHard)
+	}
+}
+
+func BenchmarkBruteHard(b *testing.B)     { benchmarkMatcherHard(b, MakeBrute) }
+func BenchmarkRadixHard(b *testing.B)     { benchmarkMatcherHard(b, MakeRadix) }
+func BenchmarkRabinKarpHard(b *testing.B) { benchmarkMatcherHard(b, MakeRabinKarp) }
+
+func BenchmarkBruteHard2(b *testing.B)     { benchmarkMatcherHard2(b, MakeBrute) }
+func BenchmarkRadixHard2(b *testing.B)     { benchmarkMatcherHard2(b, MakeRadix) }
+func BenchmarkRabinKarpHard2(b *testing.B) { benchmarkMatcherHard2(b, MakeRabinKarp) }
+
+func BenchmarkBruteHard3(b *testing.B)     { benchmarkMatcherHard3(b, MakeBrute) }
+func BenchmarkRadixHard3(b *testing.B)     { benchmarkMatcherHard3(b, MakeRadix) }
+func BenchmarkRabinKarpHard3(b *testing.B) { benchmarkMatcherHard3(b, MakeRabinKarp) }
+
+func BenchmarkBruteHard4(b *testing.B)     { benchmarkMatcherHard4(b, MakeBrute) }
+func BenchmarkRadixHard4(b *testing.B)     { benchmarkMatcherHard4(b, MakeRadix) }
+func BenchmarkRabinKarpHard4(b *testing.B) { benchmarkMatcherHard4(b, MakeRabinKarp) }
+
+var benchInputTorture = strings.Repeat("ABC", 1<<10) + "123" + strings.Repeat("ABC", 1<<10)
+var benchNeedleTorture = strings.Repeat("ABC", 1<<10+1)
