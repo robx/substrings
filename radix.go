@@ -10,7 +10,7 @@ type Radix struct {
 
 var _ Matcher = Radix{}
 
-func MakeRadix(patterns []string) Radix {
+func MakeRadix(patterns []string) Matcher {
 	r := Radix{radix.New()}
 	for _, p := range patterns {
 		r.Insert(p, struct{}{})

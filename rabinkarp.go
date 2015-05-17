@@ -37,7 +37,7 @@ type RabinKarp struct {
 
 var _ Matcher = RabinKarp{}
 
-func MakeRabinKarp(patterns []string) RabinKarp {
+func MakeRabinKarp(patterns []string) Matcher {
 	min := -1
 	for _, p := range patterns {
 		if l := len(p); min == -1 || l < min {

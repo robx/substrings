@@ -8,9 +8,15 @@ type Matcher interface {
 	Matches(s string) bool
 }
 
+type MatcherMaker func(patterns []string) Matcher
+
 type Brute []string
 
 var _ Matcher = Brute([]string{})
+
+func MakeBrute(patterns []string) Matcher {
+	return Brute(patterns)
+}
 
 func (patterns Brute) Matches(s string) bool {
 	for _, p := range patterns {
