@@ -41,18 +41,10 @@ func TestAnyContainsAnyNaive(t *testing.T) {
 	testAnyContainsAny(t, AnyContainsAnyNaive)
 }
 
-func TestAnyContainsAny(t *testing.T) {
-	testAnyContainsAny(t, AnyContainsAny)
-}
-
 func testAgainstNaive(t *testing.T, f func([]string, []string) bool) {
 	if err := quick.CheckEqual(f, AnyContainsAnyNaive, nil); err != nil {
 		t.Error(err)
 	}
-}
-
-func TestAnyContainsAnyQuick(t *testing.T) {
-	testAgainstNaive(t, AnyContainsAny)
 }
 
 func TestAnyContainsAnyRadix(t *testing.T) {

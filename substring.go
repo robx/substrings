@@ -4,17 +4,29 @@ import (
 	"strings"
 )
 
-func AnyContainsAnyNaive(ss []string, substrs []string) bool {
-	for _, s := range ss {
-		for _, substr := range substrs {
-			if strings.Contains(s, substr) {
-				return true
-			}
+type Matcher interface {
+	Matches(s string) bool
+}
+
+type Brute []string
+
+var _ Matcher = Brute([]string{})
+
+func (patterns Brute) Matches(s string) bool {
+	for _, p := range patterns {
+		if strings.Contains(s, p) {
+			return true
 		}
 	}
 	return false
 }
 
-func AnyContainsAny(ss []string, substrs []string) bool {
-	return AnyContainsAnyNaive(ss, substrs)
+func AnyContainsAnyNaive(ss []string, patterns []string) bool {
+	b := Brute(patterns)
+	for _, s := range ss {
+		if b.Matches(s) {
+			return true
+		}
+	}
+	return false
 }
