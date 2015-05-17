@@ -29,14 +29,21 @@ func hashPow(n int) uint32 {
 	return pow
 }
 
-func hashes(patterns []string) (int, uint32, map[uint32]*radix.Tree) {
+type RabinKarp struct {
+	trees map[uint32]*radix.Tree
+	n     int
+	pow   uint32
+}
+
+var _ Matcher = RabinKarp{}
+
+func MakeRabinKarp(patterns []string) RabinKarp {
 	min := -1
 	for _, p := range patterns {
 		if l := len(p); min == -1 || l < min {
 			min = l
 		}
 	}
-	pow := hashPow(min)
 
 	trees := make(map[uint32]*radix.Tree)
 	for _, s := range patterns {
@@ -48,45 +55,55 @@ func hashes(patterns []string) (int, uint32, map[uint32]*radix.Tree) {
 		}
 		t.Insert(s, struct{}{})
 	}
-	return min, pow, trees
+	return RabinKarp{
+		trees: trees,
+		n:     min,
+		pow:   hashPow(min),
+	}
 }
 
-func AnyContainsAnyKarpRabin(ss []string, patterns []string) bool {
-	n, pow, trees := hashes(patterns)
-	switch n {
+func (m RabinKarp) Matches(s string) bool {
+	switch m.n {
 	case -1:
 		return false
 	case 0:
-		return len(ss) > 0
+		return true
+	}
+	if len(s) < m.n {
+		return false
 	}
 
-	for _, s := range ss {
-		if len(s) < n {
-			continue
+	// Rabin-Karp search
+	var h uint32
+	for i := 0; i < m.n; i++ {
+		h = h*primeRK + uint32(s[i])
+	}
+	if t := m.trees[h]; t != nil {
+		_, val, _ := t.LongestPrefix(s)
+		if val != nil {
+			return true
 		}
-
-		// Rabin-Karp search
-		var h uint32
-		for i := 0; i < n; i++ {
-			h = h*primeRK + uint32(s[i])
-		}
-		if t := trees[h]; t != nil {
-			_, val, _ := t.LongestPrefix(s)
+	}
+	for i := m.n; i < len(s); {
+		h *= primeRK
+		h += uint32(s[i])
+		h -= m.pow * uint32(s[i-m.n])
+		i++
+		if t := m.trees[h]; t != nil {
+			_, val, _ := t.LongestPrefix(s[i-m.n:])
 			if val != nil {
 				return true
 			}
 		}
-		for i := n; i < len(s); {
-			h *= primeRK
-			h += uint32(s[i])
-			h -= pow * uint32(s[i-n])
-			i++
-			if t := trees[h]; t != nil {
-				_, val, _ := t.LongestPrefix(s[i-n:])
-				if val != nil {
-					return true
-				}
-			}
+	}
+	return false
+}
+
+func AnyContainsAnyKarpRabin(ss []string, patterns []string) bool {
+	m := MakeRabinKarp(patterns)
+	for _, s := range ss {
+		if m.Matches(s) {
+			return true
 		}
 	}
 	return false
