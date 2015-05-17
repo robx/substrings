@@ -58,6 +58,9 @@ func TestAnyContainsAnyRadixQuick(t *testing.T) {
 func TestAnyContainsAnyKR(t *testing.T) {
 	testAnyContainsAny(t, AnyContainsAnyKarpRabin)
 }
+func TestAnyContainsAnyAC(t *testing.T) {
+	testAnyContainsAny(t, AnyContainsAnyAhoCorasick)
+}
 func TestAnyContainsAnyKRQuick(t *testing.T) {
 	testAgainstNaive(t, AnyContainsAnyKarpRabin)
 }
@@ -66,6 +69,9 @@ func TestAnyContainsAnyKRBrute(t *testing.T) {
 }
 func TestAnyContainsAnyKRBruteQuick(t *testing.T) {
 	testAgainstNaive(t, AnyContainsAnyKarpRabinBrute)
+}
+func TestAnyContainsAnyACQuick(t *testing.T) {
+	testAgainstNaive(t, AnyContainsAnyAhoCorasick)
 }
 
 func makeBenchInputHard() string {
@@ -139,21 +145,25 @@ func BenchmarkBruteHard(b *testing.B)          { benchmarkMatcherHard(b, MakeBru
 func BenchmarkRadixHard(b *testing.B)          { benchmarkMatcherHard(b, MakeRadix) }
 func BenchmarkRabinKarpHard(b *testing.B)      { benchmarkMatcherHard(b, MakeRabinKarp) }
 func BenchmarkRabinKarpBruteHard(b *testing.B) { benchmarkMatcherHard(b, MakeRabinKarpBrute) }
+func BenchmarkAhoCorasickHard(b *testing.B)    { benchmarkMatcherHard(b, MakeAhoCorasick) }
 
 func BenchmarkBruteHard2(b *testing.B)          { benchmarkMatcherHard2(b, MakeBrute) }
 func BenchmarkRadixHard2(b *testing.B)          { benchmarkMatcherHard2(b, MakeRadix) }
 func BenchmarkRabinKarpHard2(b *testing.B)      { benchmarkMatcherHard2(b, MakeRabinKarp) }
 func BenchmarkRabinKarpBruteHard2(b *testing.B) { benchmarkMatcherHard2(b, MakeRabinKarpBrute) }
+func BenchmarkAhoCorasickHard2(b *testing.B)    { benchmarkMatcherHard2(b, MakeAhoCorasick) }
 
 func BenchmarkBruteHard3(b *testing.B)          { benchmarkMatcherHard3(b, MakeBrute) }
 func BenchmarkRadixHard3(b *testing.B)          { benchmarkMatcherHard3(b, MakeRadix) }
 func BenchmarkRabinKarpHard3(b *testing.B)      { benchmarkMatcherHard3(b, MakeRabinKarp) }
 func BenchmarkRabinKarpBruteHard3(b *testing.B) { benchmarkMatcherHard3(b, MakeRabinKarpBrute) }
+func BenchmarkAhoCorasickHard3(b *testing.B)    { benchmarkMatcherHard3(b, MakeAhoCorasick) }
 
 func BenchmarkBruteHard4(b *testing.B)          { benchmarkMatcherHard4(b, MakeBrute) }
 func BenchmarkRadixHard4(b *testing.B)          { benchmarkMatcherHard4(b, MakeRadix) }
 func BenchmarkRabinKarpHard4(b *testing.B)      { benchmarkMatcherHard4(b, MakeRabinKarp) }
 func BenchmarkRabinKarpBruteHard4(b *testing.B) { benchmarkMatcherHard4(b, MakeRabinKarpBrute) }
+func BenchmarkAhoCorasickHard4(b *testing.B)    { benchmarkMatcherHard4(b, MakeAhoCorasick) }
 
 var benchInputTorture = strings.Repeat("ABC", 1<<10) + "123" + strings.Repeat("ABC", 1<<10)
 var benchNeedleTorture = strings.Repeat("ABC", 1<<10+1)
