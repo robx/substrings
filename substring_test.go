@@ -48,3 +48,11 @@ func testAgainstNaive(t *testing.T, f func([]string, []string) bool) {
 func TestAnyContainsAnyQuick(t *testing.T) {
 	testAgainstNaive(t, AnyContainsAny)
 }
+
+func TestAnyContainsAnyRadix(t *testing.T) {
+	testAnyContainsAny(t, AnyContainsAnyRadix)
+}
+
+func TestAnyContainsAnyRadixQuick(t *testing.T) {
+	testAgainstNaive(t, AnyContainsAnyRadix)
+}
