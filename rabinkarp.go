@@ -1,6 +1,8 @@
 package substring
 
 import (
+	"strings"
+
 	radix "github.com/armon/go-radix"
 )
 
@@ -100,6 +102,79 @@ func (m RabinKarp) Matches(s string) bool {
 }
 
 func AnyContainsAnyKarpRabin(ss []string, patterns []string) bool {
+	m := MakeRabinKarp(patterns)
+	for _, s := range ss {
+		if m.Matches(s) {
+			return true
+		}
+	}
+	return false
+}
+
+type RabinKarpBrute struct {
+	byhash map[uint32][]string
+	n      int
+	pow    uint32
+}
+
+var _ Matcher = RabinKarpBrute{}
+
+func MakeRabinKarpBrute(patterns []string) Matcher {
+	min := -1
+	for _, p := range patterns {
+		if l := len(p); min == -1 || l < min {
+			min = l
+		}
+	}
+
+	byhash := make(map[uint32][]string)
+	for _, s := range patterns {
+		h := hashStr(s[:min])
+		byhash[h] = append(byhash[h], s)
+	}
+	return RabinKarpBrute{
+		byhash: byhash,
+		n:      min,
+		pow:    hashPow(min),
+	}
+}
+
+func (m RabinKarpBrute) Matches(s string) bool {
+	switch m.n {
+	case -1:
+		return false
+	case 0:
+		return true
+	}
+	if len(s) < m.n {
+		return false
+	}
+
+	// Rabin-Karp search
+	var h uint32
+	for i := 0; i < m.n; i++ {
+		h = h*primeRK + uint32(s[i])
+	}
+	for _, p := range m.byhash[h] {
+		if strings.HasPrefix(s, p) {
+			return true
+		}
+	}
+	for i := m.n; i < len(s); {
+		h *= primeRK
+		h += uint32(s[i])
+		h -= m.pow * uint32(s[i-m.n])
+		i++
+		for _, p := range m.byhash[h] {
+			if strings.HasPrefix(s[i-m.n:], p) {
+				return true
+			}
+		}
+	}
+	return false
+}
+
+func AnyContainsAnyKarpRabinBrute(ss []string, patterns []string) bool {
 	m := MakeRabinKarp(patterns)
 	for _, s := range ss {
 		if m.Matches(s) {
