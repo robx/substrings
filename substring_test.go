@@ -218,3 +218,20 @@ func BenchmarkRadixRand(b *testing.B)          { benchmarkMatcherRand(b, MakeRad
 func BenchmarkRabinKarpRand(b *testing.B)      { benchmarkMatcherRand(b, MakeRabinKarp) }
 func BenchmarkRabinKarpBruteRand(b *testing.B) { benchmarkMatcherRand(b, MakeRabinKarpBrute) }
 func BenchmarkAhoCorasickRand(b *testing.B)    { benchmarkMatcherRand(b, MakeAhoCorasick) }
+
+var stringsRandM = makeStrings(5, 10, 50, 5, patternsRand, 0.9)
+
+func benchmarkMatcherRandM(b *testing.B, mm MatcherMaker) {
+	m := mm(patternsRand)
+	for i := 0; i < b.N; i++ {
+		for _, s := range stringsRandM {
+			m.Matches(s)
+		}
+	}
+}
+
+func BenchmarkBruteRandM(b *testing.B)          { benchmarkMatcherRandM(b, MakeBrute) }
+func BenchmarkRadixRandM(b *testing.B)          { benchmarkMatcherRandM(b, MakeRadix) }
+func BenchmarkRabinKarpRandM(b *testing.B)      { benchmarkMatcherRandM(b, MakeRabinKarp) }
+func BenchmarkRabinKarpBruteRandM(b *testing.B) { benchmarkMatcherRandM(b, MakeRabinKarpBrute) }
+func BenchmarkAhoCorasickRandM(b *testing.B)    { benchmarkMatcherRandM(b, MakeAhoCorasick) }
