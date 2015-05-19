@@ -190,5 +190,75 @@ func BenchmarkMakeRabinKarpBrute(b *testing.B) { benchmarkMake(b, MakeRabinKarpB
 func BenchmarkMakeAhoCorasick(b *testing.B)    { benchmarkMake(b, MakeAhoCorasick) }
 func BenchmarkMakeAhoCorasickB(b *testing.B)   { benchmarkMake(b, MakeAhoCorasickB) }
 
-var benchInputTorture = strings.Repeat("ABC", 1<<10) + "123" + strings.Repeat("ABC", 1<<10)
-var benchNeedleTorture = strings.Repeat("ABC", 1<<10+1)
+var letters = []rune("abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ")
+
+func makePatterns(min, max, n int) []string {
+	var ps []string
+	for i := 0; i < n; i++ {
+		l := rand.Intn(max-min) + min
+		p := make([]rune, l)
+		for j := 0; j < l; j++ {
+			p[j] = letters[rand.Intn(26)*2]
+		}
+		ps = append(ps, string(p))
+	}
+	return ps
+}
+
+func makeStrings(min, max, n, k int, patterns []string, match float64) []string {
+	var ss []string
+	for i := 0; i < n; i++ {
+		var parts []string
+		for j := 0; j < k; j++ {
+			l := rand.Intn(max-min) + min
+			p := make([]rune, l)
+			for j := 0; j < l; j++ {
+				p[j] = letters[rand.Intn(26)*2+1]
+			}
+			parts = append(parts, string(p))
+		}
+		if rand.Float64() < match {
+			p := patterns[rand.Intn(len(patterns))]
+			parts[rand.Intn(len(parts))] = p
+		}
+		ss = append(ss, strings.Join(parts, ""))
+	}
+	return ss
+}
+
+var patternsRand = makePatterns(5, 10, 50)
+var stringsRand = makeStrings(5, 10, 50, 5, patternsRand, 0.1)
+
+func benchmarkMatcherRand(b *testing.B, mm MatcherMaker) {
+	m := mm(patternsRand)
+	for i := 0; i < b.N; i++ {
+		for _, s := range stringsRand {
+			m.Matches(s)
+		}
+	}
+}
+
+func BenchmarkBruteRand(b *testing.B)          { benchmarkMatcherRand(b, MakeBrute) }
+func BenchmarkRadixRand(b *testing.B)          { benchmarkMatcherRand(b, MakeRadix) }
+func BenchmarkRabinKarpRand(b *testing.B)      { benchmarkMatcherRand(b, MakeRabinKarp) }
+func BenchmarkRabinKarpBruteRand(b *testing.B) { benchmarkMatcherRand(b, MakeRabinKarpBrute) }
+func BenchmarkAhoCorasickRand(b *testing.B)    { benchmarkMatcherRand(b, MakeAhoCorasick) }
+func BenchmarkAhoCorasickBRand(b *testing.B)   { benchmarkMatcherRand(b, MakeAhoCorasickB) }
+
+var stringsRandM = makeStrings(5, 10, 50, 5, patternsRand, 0.9)
+
+func benchmarkMatcherRandM(b *testing.B, mm MatcherMaker) {
+	m := mm(patternsRand)
+	for i := 0; i < b.N; i++ {
+		for _, s := range stringsRandM {
+			m.Matches(s)
+		}
+	}
+}
+
+func BenchmarkBruteRandM(b *testing.B)          { benchmarkMatcherRandM(b, MakeBrute) }
+func BenchmarkRadixRandM(b *testing.B)          { benchmarkMatcherRandM(b, MakeRadix) }
+func BenchmarkRabinKarpRandM(b *testing.B)      { benchmarkMatcherRandM(b, MakeRabinKarp) }
+func BenchmarkRabinKarpBruteRandM(b *testing.B) { benchmarkMatcherRandM(b, MakeRabinKarpBrute) }
+func BenchmarkAhoCorasickRandM(b *testing.B)    { benchmarkMatcherRandM(b, MakeAhoCorasick) }
+func BenchmarkAhoCorasickRandBM(b *testing.B)   { benchmarkMatcherRandM(b, MakeAhoCorasickB) }
