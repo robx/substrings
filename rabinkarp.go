@@ -1,4 +1,4 @@
-package substring
+package substrings
 
 import (
 	"strings"

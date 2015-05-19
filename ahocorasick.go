@@ -1,4 +1,4 @@
-package substring
+package substrings
 
 import (
 	ahocorasickb "github.com/cloudflare/ahocorasick"
